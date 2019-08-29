@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t andninja/react-test -f ./client/Dockerfile.dev ./client
+
+script: 
+  - docker run andninja/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t andninja/multi-client ./client
+  - docker build -t andninja/multi-nginx ./nginx
+  - docker build -t andninja/multi-server ./server
+  - docker build -t andninja/multi-worker ./worker
+  #Login to docker cli
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  #Take those images and push to docker hub
+  - docker push andninja/multi-client
+  - docker push andninja/multi-nginx
+  - docker push andninja/multi-server
+  - docker push andninja/multi-worker
+
+
+  
